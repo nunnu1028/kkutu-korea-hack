@@ -1,6 +1,6 @@
 namespace WordUtils {
 	export async function loadWordList(): Promise<string[]> {
-		const response = await fetch("https://raw.githubusercontent.com/nunnu1028/kkutu-korea-hack/stable/list.json");
+		const response = await fetch("https://raw.githubusercontent.com/nunnu1028/kkutu-korea-hack/stable/data.json");
 		const text = await response.text();
 		return JSON.parse(text);
 	}
@@ -17,10 +17,19 @@ interface KkutuHackOption {
 	sortFunction: (a: string, b: string) => number;
 	sortByLength: boolean;
 	sortByEndWord: boolean;
-	endWord: string;
+	endWord: string[];
 	inputInsteadLog: boolean;
 	typingSpeed?: number;
 }
+
+const DefaultOption: KkutuHackOption = {
+	sortFunction: (a: string, b: string) => a.length - b.length,
+	sortByLength: true,
+	sortByEndWord: true,
+	endWord: [""],
+	inputInsteadLog: false,
+	typingSpeed: 1000
+};
 
 class KkutuHack {
 	private _wordList: string[] = [];
@@ -30,16 +39,7 @@ class KkutuHack {
 	private _task: NodeJS.Timer | null = null;
 	private _running: boolean = false;
 
-	constructor(
-		private _option: KkutuHackOption = {
-			sortFunction: (a: string, b: string) => a.length - b.length,
-			sortByLength: true,
-			sortByEndWord: true,
-			endWord: "",
-			inputInsteadLog: true,
-			typingSpeed: 1000
-		}
-	) {}
+	constructor(private _option: KkutuHackOption = DefaultOption) {}
 
 	public get option(): KkutuHackOption {
 		return this._option;
@@ -62,8 +62,8 @@ class KkutuHack {
 
 		if (this._option.sortByLength) {
 			if (this._option.sortByEndWord) {
-				const endWords = words.filter((word) => word.endsWith(this._option.endWord));
-				const nonEndWords = words.filter((word) => !word.endsWith(this._option.endWord));
+				const endWords = words.filter((word) => this._option.endWord.some((endWord) => word.endsWith(endWord)));
+				const nonEndWords = words.filter((word) => !this._option.endWord.some((endWord) => word.endsWith(endWord)));
 
 				return nonEndWords.sort(this._option.sortFunction).concat(endWords.sort(this._option.sortFunction));
 			}
@@ -103,7 +103,10 @@ class KkutuHack {
 
 						this.getInputDoc().value = wordList[wordList.length - 1];
 					} else {
-						console.dir(startWord + ": " + wordList.join("\n"));
+						for (let i = 0; i < wordList.length / 2000; i++) {
+							const words = wordList.slice(i * 2000, (i + 1) * 2000);
+							console.log(words.join("\n"));
+						}
 					}
 				}
 			});
@@ -134,7 +137,8 @@ class KkutuHack {
 	}
 }
 
-const hack = new KkutuHack();
+const hack = new KkutuHack({ ...DefaultOption, endWord: ["윰", "릇", "늣", "륨"] });
+
 hack.init().then(() => {
 	hack.run();
 	console.log("[+] KKUTU HACK RUNNING");
