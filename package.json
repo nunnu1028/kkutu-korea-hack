@@ -1,0 +1,16 @@
+{
+	"name": "kkutu-hack",
+	"version": "0.1.0",
+	"description": "Powerful hack tool for kkutu",
+	"main": "dist/index.js",
+	"scripts": {
+		"build": "tsc -p tsconfig.json"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"@types/node": "^18.7.6",
+		"typescript": "^4.7.4"
+	}
+}
